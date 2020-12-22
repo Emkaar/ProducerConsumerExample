@@ -1,7 +1,6 @@
 package consumer;
 
 import producer.WorkState;
-
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 
