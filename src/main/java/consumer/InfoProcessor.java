@@ -1,7 +1,9 @@
 package consumer;
 
+import producer.FileToArrayReader;
+
 import java.util.List;
 
 public interface InfoProcessor {
-    void process();
+    void process(FileToArrayReader fileToArrayReader);
 }
