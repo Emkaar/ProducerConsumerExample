@@ -14,14 +14,16 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         ArrayBlockingQueue<String[]> arrayBlockingQueue = new ArrayBlockingQueue(10);
         WorkState state = new WorkState();
+        //StringInfoProcessor infoProcessor = new StringInfoProcessor(arrayBlockingQueue, state);
         FileToArrayReader fileToArrayReader = new FileToArrayReader(new File("test9346.txt"), arrayBlockingQueue, 50, state);
         ExecutorService executorService = Executors.newFixedThreadPool(11);
         executorService.submit(fileToArrayReader);
         for (int i = 0; i < 10; i++) {
+           // executorService.submit(infoProcessor);
             executorService.submit(new StringInfoProcessor(arrayBlockingQueue, state));
         }
         executorService.shutdown();
-        executorService.awaitTermination(10, TimeUnit.SECONDS);
+        executorService.awaitTermination(100, TimeUnit.SECONDS);
 //        Thread producer = new Thread(fileToArrayReader);
 //        Thread consumer = new Thread(new StringInfoProcessor(arrayBlockingQueue, state));
 //        producer.start();

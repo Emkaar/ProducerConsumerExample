@@ -1,7 +1,5 @@
 package consumer;
 
-import consumer.InfoProcessor;
-import producer.FileToArrayReader;
 import producer.WorkState;
 
 import java.util.HashMap;
@@ -49,12 +47,18 @@ public class StringInfoProcessor implements Runnable{
 
     @Override
     public void run() {
-
-//        while (!workState.getWorkInfo() && !arrayBlockingQueue.isEmpty()){
-        while (true){
-                System.out.println("consumer run started");
+        System.out.println("Consumer run " + Thread.currentThread());
+//        while (!workState.workDone() && !arrayBlockingQueue.isEmpty()){
+        while (!arrayBlockingQueue.isEmpty() || !workState.workDone()){
+//            synchronized (this) {
+//                if (!arrayBlockingQueue.isEmpty() && workState.workDone()) {
+//                    break;
+//                }
+//            }
+                System.out.println("consumer started working " + Thread.currentThread());
                 process();
-                System.out.println("I consume");
+                System.out.println("I consumed");
             }
+        System.out.println("consumer close " + Thread.currentThread());
     }
 }

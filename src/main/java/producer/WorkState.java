@@ -1,12 +1,12 @@
 package producer;
 
 public class WorkState {
-    private boolean workDone = false;
+    private volatile boolean workDone = false;
 
     public void finishWork(){
         workDone = true;
-        System.out.println("Work finished");
+        System.out.println("Work finished, finish processing and close");
     }
 
-    public boolean getWorkInfo(){return workDone;}
+    public synchronized boolean workDone(){return workDone;}
 }

@@ -66,11 +66,12 @@ public class FileToArrayReader implements Runnable{
         state.finishWork();
     }
     public boolean checkWorkState(){
-        return state.getWorkInfo();
+        return state.workDone();
     }
 
     @Override
     public void run() {
         read();
+        System.out.println("producer finished");
     }
 }
