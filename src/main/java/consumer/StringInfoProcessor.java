@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class StringInfoProcessor implements Runnable{
+    private static Object lock = new Object();
     ArrayBlockingQueue<String[]> arrayBlockingQueue;
     WorkState workState;
 
@@ -16,49 +17,47 @@ public class StringInfoProcessor implements Runnable{
 
 
     public void process() {
-        String[] processingArray;
-        HashMap<String,HashMap<Character, Integer>> resultMap = new HashMap<>();
-        try {
-            processingArray = arrayBlockingQueue.take();
-            System.out.println("I processing");
-            for (int i = 0; i < processingArray.length; i++) {
-                if(processingArray[i] == null){
-                    continue;
-                }
-                HashMap<Character, Integer> resultMapValue = new HashMap<>();
-                String resultMapKey = processingArray[i];
-                for (int j = 0; j < resultMapKey.length(); j++) {
-                    Integer charValue = resultMapValue.get(resultMapKey.charAt(j));
-                    if(charValue == null){
-                        charValue = 1;
-                    }else {
-                        charValue++;
+        while (true) {
+            String[] processingArray = null;
+            HashMap<String,HashMap<Character, Integer>> resultMap = new HashMap<>();
+            try {
+                synchronized (lock) {
+                    if (!arrayBlockingQueue.isEmpty() || !workState.workDone()) {
+                        System.out.println("try to take element " + Thread.currentThread());
+                        processingArray = arrayBlockingQueue.take();
                     }
-                    resultMapValue.put(resultMapKey.charAt(j), charValue);
                 }
-                resultMap.put(resultMapKey, resultMapValue);
+                if (processingArray == null){
+                    break;
+                }
+                System.out.println("I've got element and processing" + Thread.currentThread());
+                for (int i = 0; i < processingArray.length; i++) {
+                    if (processingArray[i] == null) {
+                        continue;
+                    }
+                    HashMap<Character, Integer> resultMapValue = new HashMap<>();
+                    String resultMapKey = processingArray[i];
+                    for (int j = 0; j < resultMapKey.length(); j++) {
+                        Integer charValue = resultMapValue.get(resultMapKey.charAt(j));
+                        if (charValue == null) {
+                            charValue = 1;
+                        } else {
+                            charValue++;
+                        }
+                        resultMapValue.put(resultMapKey.charAt(j), charValue);
+                    }
+                    resultMap.put(resultMapKey, resultMapValue);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            InformationPoint.addInfo(resultMap);
         }
-        System.out.println(Thread.currentThread());
-        InformationPoint.addInfo(resultMap);
+        System.out.println(Thread.currentThread() + " consumer finished");
     }
 
     @Override
     public void run() {
-        System.out.println("Consumer run " + Thread.currentThread());
-//        while (!workState.workDone() && !arrayBlockingQueue.isEmpty()){
-        while (!arrayBlockingQueue.isEmpty() || !workState.workDone()){
-//            synchronized (this) {
-//                if (!arrayBlockingQueue.isEmpty() && workState.workDone()) {
-//                    break;
-//                }
-//            }
-                System.out.println("consumer started working " + Thread.currentThread());
-                process();
-                System.out.println("I consumed");
-            }
-        System.out.println("consumer close " + Thread.currentThread());
+        process();
     }
 }

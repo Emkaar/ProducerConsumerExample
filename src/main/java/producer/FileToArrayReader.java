@@ -52,7 +52,14 @@ public class FileToArrayReader implements Runnable{
                 }
                 System.out.println("I read new line");
                 try {
-                    stringQueue.put(newStringArray);
+                    synchronized (stringQueue) {
+                        if (line == null) {
+//                            stringQueue.put(new String[]{"EXIT_CODE"});
+                            state.finishWork();
+                            System.out.println(stringQueue.size() + " queue size");
+                        }
+                        stringQueue.put(newStringArray);
+                    }
                 } catch (InterruptedException ex){
                     ex.printStackTrace();
                 }
@@ -63,11 +70,9 @@ public class FileToArrayReader implements Runnable{
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        state.finishWork();
     }
-    public boolean checkWorkState(){
-        return state.workDone();
-    }
+
+
 
     @Override
     public void run() {
